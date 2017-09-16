@@ -1,6 +1,11 @@
 import * as d3 from 'd3';
 import { gridRender } from './grid';
 import { Graph } from 'graphlib';
+import dot from 'graphlib-dot';
+import dagre from 'dagre';
+import preventMacScrollback from './preventMacScrollback';
+
+preventMacScrollback();
 
 d3
 	.select('body')
@@ -14,35 +19,98 @@ const svg = d3
 	.attr('width', window.innerWidth)
 	.attr('height',window.innerHeight)
 
+var transform = {x: 0, y: 0, k: 1};
+
 gridRender(svg);
 svg.call(
 	d3
 		.zoom()
 		.scaleExtent([0.2, 1000])
-		.on("zoom", () => gridRender(svg, d3.event.transform) )
+		.on("zoom", () => {
+			transform = d3.event.transform;
+			gridRender(svg, d3.event.transform);
+			layoutUpdate();
+		})
 );
 
+//var digraph = dot.read("digraph { 1; 2; 1 -> 2 [label=\"label\"] }");
 var g = new Graph();
 
-g.setNode("a");
-console.log( 'g.hasNode("a")', g.hasNode("a"));
+// Set an object for the graph label
+g.setGraph({});
 
-g.setNode("b", "b's value");
-console.log('g.node("b");', g.node("b"));
-
-
-g.setNode("c", { k: 123 });
-
-console.log('g.nodes();', g.nodes());
+// Default to assigning a new object as a label for each new edge.
+g.setDefaultEdgeLabel(function() { return {}; });
 
 
-g.setEdge("a", "b");
-g.setEdge("c", "d", { k: 456 });
+g.setNode("kspacey",    { label: "Kevin Spacey",  width: 144, height: 100 });
+g.setNode("swilliams",  { label: "Saul Williams", width: 160, height: 100 });
+g.setNode("bpitt",      { label: "Brad Pitt",     width: 108, height: 100 });
+g.setNode("hford",      { label: "Harrison Ford", width: 168, height: 100 });
+g.setNode("lwilson",    { label: "Luke Wilson",   width: 144, height: 100 });
+g.setNode("kbacon",     { label: "Kevin Bacon",   width: 121, height: 100 });
 
-console.log('g.edges()', g.edges());
+// Add edges to the graph.
+g.setEdge("kspacey",   "swilliams");
+g.setEdge("swilliams", "kbacon");
+g.setEdge("bpitt",     "kbacon");
+g.setEdge("hford",     "lwilson");
+g.setEdge("lwilson",   "kbacon");
 
-console.log('g.outEdges("a")', g.outEdges("a"));
+dagre.layout(g);
 
-console.log('g.nodeEdges("d")', g.nodeEdges("d"));
+var drag = d3.drag()
+    .on("drag", (d) => {
+	var node = g.node(d3.event.subject);
+	node.x += d3.event.dx;
+	node.y += d3.event.dy;
+	layoutUpdate();
+})
 
-console.log(g);
+const layoutUpdate = () => {
+	svg.selectAll('g').remove();
+
+	const gEl = svg.selectAll('g')
+				   .data(g.nodes(), (d) => d)
+
+	gEl.enter()
+		.append('g')
+		.merge(gEl)
+			.attr('transform', (d) =>
+				'translate(' +
+					(g.node(d).x * transform.k + transform.x)
+					+ ',' +  
+					(g.node(d).y * transform.k + transform.y)
+					+ ')'
+			)
+		.append("rect")	
+			.attr('x', 0)
+			.attr('y', 0)
+			.attr('width',  (d) => 100  * transform.k )
+			.attr('height', (d) => 50 * transform.k )
+			.attr('fill', 'white')
+
+	svg.selectAll('g')
+			.append('text')
+			.attr('y', 16 * transform.k)
+			.attr('font-size', 16 * transform.k + 'px')
+			.text((d) => d)
+	
+	svg.selectAll('g')
+		.call(drag);
+
+	gEl.exit()
+		
+
+
+}
+layoutUpdate();
+
+/*
+g.nodes().forEach(function(v) {
+     console.log("Node " + v + ": " + JSON.stringify(g.node(v), null, 2));
+});
+g.edges().forEach(function(e) {
+    console.log("Edge " + e.v + " -> " + e.w + ": " + JSON.stringify(g.edge(e), null, 2));
+});
+*/

@@ -39,12 +39,6 @@ export function gridRender(svg, transform) {
 	lines
 		.enter()
 			.append("line")
-				.attr('x1', (d) => d.x1 )
-				.attr('y1', (d) => d.y1 )
-				.attr('x2', (d) => d.x2 )
-				.attr('y2', (d) => d.y2 )
-				.attr('stroke-width', 1 )
-				.attr('stroke', (d) => d.stroke )
 		.merge(lines)
 			.attr('x1', (d) => d.x1 )
 			.attr('y1', (d) => d.y1 )
