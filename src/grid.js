@@ -27,10 +27,14 @@ function grid(dx, dy, step, every, c1, c2) {
 	return linesData.sort((a, b) => a.stroke == c1);
 }
 
-function gridRender(svg, {x, y, k}) {
+export function gridRender(svg, transform) {
+	const x = (transform||{}).x || 0,
+		  y = (transform||{}).y || 0,
+		  k = (transform||{}).k || 0;
+
 	var lines = svg
 		.selectAll('line')
-		.data(grid(x, y, 20 * k, 8, '#3c529e', '#233671'));
+		.data(grid(x, y, 20 * (k||1), 8, '#3c529e', '#233671'));
 
 	lines
 		.enter()
@@ -50,15 +54,4 @@ function gridRender(svg, {x, y, k}) {
 			.attr('stroke', (d) => d.stroke )
 
 	lines.exit().remove();
-}
-
-export default function(svg) {
-	gridRender(svg, {x: 0, y: 0, k: 1});
-
-	svg.call(
-		d3
-			.zoom()
-			.scaleExtent([0.2, 1000])
-			.on("zoom", () => gridRender(svg, d3.event.transform) )
-	);
 }

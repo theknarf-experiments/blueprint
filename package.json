@@ -21,6 +21,7 @@
     "webpack-dev-server": "^2.8.2"
   },
   "dependencies": {
-    "d3": "^4.10.2"
+    "d3": "^4.10.2",
+    "graphlib": "^2.1.1"
   }
 }

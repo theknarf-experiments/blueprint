@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
-import gridRender from './grid';
+import { gridRender } from './grid';
+import { Graph } from 'graphlib';
 
 d3
 	.select('body')
@@ -14,19 +15,34 @@ const svg = d3
 	.attr('height',window.innerHeight)
 
 gridRender(svg);
+svg.call(
+	d3
+		.zoom()
+		.scaleExtent([0.2, 1000])
+		.on("zoom", () => gridRender(svg, d3.event.transform) )
+);
 
-function dragstarted(d) {
-  d3.event.sourceEvent.stopPropagation();
-  //d3.select(this).classed("dragging", true);
-  console.log('dragstart')
-}
+var g = new Graph();
 
-function dragged(d) {
-  //d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-  console.log('drag', d.x, d.y)
-}
+g.setNode("a");
+console.log( 'g.hasNode("a")', g.hasNode("a"));
 
-function dragended(d) {
-  //d3.select(this).classed("dragging", false);
-  console.log('dragended')
-}
+g.setNode("b", "b's value");
+console.log('g.node("b");', g.node("b"));
+
+
+g.setNode("c", { k: 123 });
+
+console.log('g.nodes();', g.nodes());
+
+
+g.setEdge("a", "b");
+g.setEdge("c", "d", { k: 456 });
+
+console.log('g.edges()', g.edges());
+
+console.log('g.outEdges("a")', g.outEdges("a"));
+
+console.log('g.nodeEdges("d")', g.nodeEdges("d"));
+
+console.log(g);
