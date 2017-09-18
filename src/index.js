@@ -25,7 +25,7 @@ gridRender(svg);
 svg.call(
 	d3
 		.zoom()
-		.scaleExtent([0.2, 1000])
+		.scaleExtent([0.2, 50])
 		.on("zoom", () => {
 			transform = d3.event.transform;
 			gridRender(svg, d3.event.transform);
@@ -43,19 +43,19 @@ g.setGraph({});
 g.setDefaultEdgeLabel(function() { return {}; });
 
 
-g.setNode("kspacey",    { label: "Kevin Spacey",  width: 144, height: 100 });
-g.setNode("swilliams",  { label: "Saul Williams", width: 160, height: 100 });
-g.setNode("bpitt",      { label: "Brad Pitt",     width: 108, height: 100 });
-g.setNode("hford",      { label: "Harrison Ford", width: 168, height: 100 });
-g.setNode("lwilson",    { label: "Luke Wilson",   width: 144, height: 100 });
-g.setNode("kbacon",     { label: "Kevin Bacon",   width: 121, height: 100 });
+g.setNode("kspacey",    { label: "Kevin Spacey",  width: 300, height: 400 });
+g.setNode("swilliams",  { label: "Saul Williams", width: 300, height: 400 });
+g.setNode("bpitt",      { label: "Brad Pitt",     width: 300, height: 400 });
+g.setNode("hford",      { label: "Harrison Ford", width: 300, height: 400 });
+g.setNode("lwilson",    { label: "Luke Wilson",   width: 300, height: 400 });
+g.setNode("kbacon",     { label: "Kevin Bacon",   width: 300, height: 400 });
 
 // Add edges to the graph.
-g.setEdge("kspacey",   "swilliams");
-g.setEdge("swilliams", "kbacon");
-g.setEdge("bpitt",     "kbacon");
-g.setEdge("hford",     "lwilson");
-g.setEdge("lwilson",   "kbacon");
+//g.setEdge("kspacey",   "swilliams");
+//g.setEdge("swilliams", "kbacon");
+//g.setEdge("bpitt",     "kbacon");
+//g.setEdge("hford",     "lwilson");
+//g.setEdge("lwilson",   "kbacon");
 
 dagre.layout(g);
 
@@ -66,6 +66,12 @@ var drag = d3.drag()
 	node.y += d3.event.dy;
 	layoutUpdate();
 })
+
+
+var line = d3.radialLine()
+    .curve(d3.curveBundle.beta(0.85))
+    .radius((d) => d.y )
+    .angle((d) => d.x / 180 * Math.PI );
 
 const layoutUpdate = () => {
 	svg.selectAll('g').remove();
@@ -86,31 +92,21 @@ const layoutUpdate = () => {
 		.append("rect")	
 			.attr('x', 0)
 			.attr('y', 0)
-			.attr('width',  (d) => 100  * transform.k )
-			.attr('height', (d) => 50 * transform.k )
-			.attr('fill', 'white')
+			.attr('width',  (d) => g.node(d).width  * transform.k )
+			.attr('height', (d) => 30 * transform.k )
+			.attr('fill', 'black')
 
 	svg.selectAll('g')
 			.append('text')
-			.attr('y', 16 * transform.k)
+			.attr('x', 15 * transform.k)
+			.attr('y', 20 * transform.k)
 			.attr('font-size', 16 * transform.k + 'px')
-			.text((d) => d)
+			.style('fill', 'white')
+			.text((d) => g.node(d).label)
 	
 	svg.selectAll('g')
 		.call(drag);
 
 	gEl.exit()
-		
-
-
 }
 layoutUpdate();
-
-/*
-g.nodes().forEach(function(v) {
-     console.log("Node " + v + ": " + JSON.stringify(g.node(v), null, 2));
-});
-g.edges().forEach(function(e) {
-    console.log("Edge " + e.v + " -> " + e.w + ": " + JSON.stringify(g.edge(e), null, 2));
-});
-*/
