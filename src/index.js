@@ -1,47 +1,34 @@
 import * as d3 from 'd3';
-import { gridRender } from './grid';
-import { Graph } from 'graphlib';
-import dot from 'graphlib-dot';
-import dagre from 'dagre';
+import { Grid } from './grid';
+import Blueprint from './blueprint';
+
 import preventMacScrollback from './preventMacScrollback';
-
 preventMacScrollback();
-
-d3
-	.select('body')
-	.style('background-color', '#1c2e60')
-	.style('margin', '0')
-	.style('padding', '0')
 
 const svg = d3
 	.select('body')
+		.style('margin', '0')
+		.style('padding', '0')
 	.append('svg')
-	.attr('width', window.innerWidth)
-	.attr('height',window.innerHeight)
+		.attr('width', window.innerWidth)
+		.attr('height',window.innerHeight)
 
-var transform = {x: 0, y: 0, k: 1};
+var blueprint = new Blueprint({
+	dom: svg,
 
-gridRender(svg);
-svg.call(
-	d3
-		.zoom()
-		.scaleExtent([0.2, 50])
-		.on("zoom", () => {
-			transform = d3.event.transform;
-			gridRender(svg, d3.event.transform);
-			layoutUpdate();
-		})
-);
+	zoom: layoutUpdate,
 
+	plugin: [
+		new Grid(svg, {
+			color: {
+			}
+		})	
+	]
+});
+
+//import dot from 'graphlib-dot';
 //var digraph = dot.read("digraph { 1; 2; 1 -> 2 [label=\"label\"] }");
-var g = new Graph();
-
-// Set an object for the graph label
-g.setGraph({});
-
-// Default to assigning a new object as a label for each new edge.
-g.setDefaultEdgeLabel(function() { return {}; });
-
+var g = blueprint.getGraph();
 
 g.setNode("kspacey",    { label: "Kevin Spacey",  width: 300, height: 400 });
 g.setNode("swilliams",  { label: "Saul Williams", width: 300, height: 400 });
@@ -50,30 +37,16 @@ g.setNode("hford",      { label: "Harrison Ford", width: 300, height: 400 });
 g.setNode("lwilson",    { label: "Luke Wilson",   width: 300, height: 400 });
 g.setNode("kbacon",     { label: "Kevin Bacon",   width: 300, height: 400 });
 
-// Add edges to the graph.
-//g.setEdge("kspacey",   "swilliams");
-//g.setEdge("swilliams", "kbacon");
-//g.setEdge("bpitt",     "kbacon");
-//g.setEdge("hford",     "lwilson");
-//g.setEdge("lwilson",   "kbacon");
+/*/ Add edges to the graph.
+g.setEdge("kspacey",   "swilliams");
+g.setEdge("swilliams", "kbacon");
+g.setEdge("bpitt",     "kbacon");
+g.setEdge("hford",     "lwilson");
+g.setEdge("lwilson",   "kbacon");//*/
 
-dagre.layout(g);
+blueprint.calculateLayout();
 
-var drag = d3.drag()
-    .on("drag", (d) => {
-	var node = g.node(d3.event.subject);
-	node.x += d3.event.dx;
-	node.y += d3.event.dy;
-	layoutUpdate();
-})
-
-
-var line = d3.radialLine()
-    .curve(d3.curveBundle.beta(0.85))
-    .radius((d) => d.y )
-    .angle((d) => d.x / 180 * Math.PI );
-
-const layoutUpdate = () => {
+function layoutUpdate(transform) {
 	svg.selectAll('g').remove();
 
 	const gEl = svg.selectAll('g')
@@ -105,8 +78,8 @@ const layoutUpdate = () => {
 			.text((d) => g.node(d).label)
 	
 	svg.selectAll('g')
-		.call(drag);
+		.call(blueprint.drag);
 
 	gEl.exit()
 }
-layoutUpdate();
+layoutUpdate({x: 0, y: 0, k: 1});

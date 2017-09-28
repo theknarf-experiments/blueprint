@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 
 function grid(dx, dy, step, every, c1, c2) {
-	var linesData = []
+	var linesData = [];
 	dx = dx % (step * every);
 	dy = dy % (step * every);
 
@@ -27,25 +27,32 @@ function grid(dx, dy, step, every, c1, c2) {
 	return linesData.sort((a, b) => a.stroke == c1);
 }
 
-export function gridRender(svg, transform) {
-	const x = (transform||{}).x || 0,
-		  y = (transform||{}).y || 0,
-		  k = (transform||{}).k || 0;
+export function Grid(svg, config) {
+	const bgColor = ((config||{}).color).bg || '#1c2e60';
+	svg.style('background-color', bgColor);
 
-	var lines = svg
-		.selectAll('line')
-		.data(grid(x, y, 20 * (k||1), 8, '#3c529e', '#233671'));
+	return {
+		update: (transform) => {
+			const x = (transform||{}).x || 0,
+			y = (transform||{}).y || 0,
+			k = (transform||{}).k || 0;
 
-	lines
-		.enter()
-			.append("line")
-		.merge(lines)
-			.attr('x1', (d) => d.x1 )
-			.attr('y1', (d) => d.y1 )
-			.attr('x2', (d) => d.x2 )
-			.attr('y2', (d) => d.y2 )
-			.attr('stroke-width', 1 )
-			.attr('stroke', (d) => d.stroke )
+			var lines = svg
+				.selectAll('line')
+				.data(grid(x, y, 20 * (k||1), 8, '#3c529e', '#233671'));
 
-	lines.exit().remove();
+			lines
+				.enter()
+				.append("line")
+				.merge(lines)
+				.attr('x1', (d) => d.x1 )
+				.attr('y1', (d) => d.y1 )
+				.attr('x2', (d) => d.x2 )
+				.attr('y2', (d) => d.y2 )
+				.attr('stroke-width', 1 )
+				.attr('stroke', (d) => d.stroke )
+
+				lines.exit().remove();
+		}
+	}
 }
