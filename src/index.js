@@ -20,29 +20,36 @@ var blueprint = new Blueprint({
 
 	plugin: [
 		new Grid(svg, {
+			space: 20,
+			pattern: {
+				vertical: 'bsssssss',
+				horizontal: 'bsssssss',
+			},
 			color: {
+				'b' : '#3c529e',
+				's' : '#233671',
 			}
 		})	
 	]
 });
 
 //import dot from 'graphlib-dot';
-//var digraph = dot.read("digraph { 1; 2; 1 -> 2 [label=\"label\"] }");
-var g = blueprint.getGraph();
+//var graph = dot.read("digraph { 1; 2; 1 -> 2 [label=\"label\"] }");
+var graph = blueprint.getGraph();
 
-g.setNode("kspacey",    { label: "Kevin Spacey",  width: 300, height: 400 });
-g.setNode("swilliams",  { label: "Saul Williams", width: 300, height: 400 });
-g.setNode("bpitt",      { label: "Brad Pitt",     width: 300, height: 400 });
-g.setNode("hford",      { label: "Harrison Ford", width: 300, height: 400 });
-g.setNode("lwilson",    { label: "Luke Wilson",   width: 300, height: 400 });
-g.setNode("kbacon",     { label: "Kevin Bacon",   width: 300, height: 400 });
+graph.setNode("kspacey",    { label: "Kevin Spacey",  width: 300, height: 400 });
+graph.setNode("swilliams",  { label: "Saul Williams", width: 300, height: 400 });
+graph.setNode("bpitt",      { label: "Brad Pitt",     width: 300, height: 400 });
+graph.setNode("hford",      { label: "Harrison Ford", width: 300, height: 400 });
+graph.setNode("lwilson",    { label: "Luke Wilson",   width: 300, height: 400 });
+graph.setNode("kbacon",     { label: "Kevin Bacon",   width: 300, height: 400 });
 
 /*/ Add edges to the graph.
-g.setEdge("kspacey",   "swilliams");
-g.setEdge("swilliams", "kbacon");
-g.setEdge("bpitt",     "kbacon");
-g.setEdge("hford",     "lwilson");
-g.setEdge("lwilson",   "kbacon");//*/
+graph.setEdge("kspacey",   "swilliams");
+graph.setEdge("swilliams", "kbacon");
+graph.setEdge("bpitt",     "kbacon");
+graph.setEdge("hford",     "lwilson");
+graph.setEdge("lwilson",   "kbacon");//*/
 
 blueprint.calculateLayout();
 
@@ -50,22 +57,22 @@ function layoutUpdate(transform) {
 	svg.selectAll('g').remove();
 
 	const gEl = svg.selectAll('g')
-				   .data(g.nodes(), (d) => d)
+				   .data(graph.nodes(), (d) => d)
 
 	gEl.enter()
 		.append('g')
 		.merge(gEl)
 			.attr('transform', (d) =>
 				'translate(' +
-					(g.node(d).x * transform.k + transform.x)
+					(graph.node(d).x * transform.k + transform.x)
 					+ ',' +  
-					(g.node(d).y * transform.k + transform.y)
+					(graph.node(d).y * transform.k + transform.y)
 					+ ')'
 			)
 		.append("rect")	
 			.attr('x', 0)
 			.attr('y', 0)
-			.attr('width',  (d) => g.node(d).width  * transform.k )
+			.attr('width',  (d) => graph.node(d).width  * transform.k )
 			.attr('height', (d) => 30 * transform.k )
 			.attr('fill', 'black')
 
@@ -75,7 +82,7 @@ function layoutUpdate(transform) {
 			.attr('y', 20 * transform.k)
 			.attr('font-size', 16 * transform.k + 'px')
 			.style('fill', 'white')
-			.text((d) => g.node(d).label)
+			.text((d) => graph.node(d).label)
 	
 	svg.selectAll('g')
 		.call(blueprint.drag);
