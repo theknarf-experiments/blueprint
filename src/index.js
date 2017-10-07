@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { Grid } from './grid';
 import Blueprint from './blueprint';
+import { drawNodes } from './drawNodes';
 
 import preventMacScrollback from './preventMacScrollback';
 preventMacScrollback();
@@ -15,9 +16,6 @@ const svg = d3
 
 var blueprint = new Blueprint({
 	dom: svg,
-
-	zoom: layoutUpdate,
-
 	plugin: [
 		new Grid(svg, {
 			space: 20,
@@ -29,7 +27,8 @@ var blueprint = new Blueprint({
 				'b' : '#3c529e',
 				's' : '#233671',
 			}
-		})	
+		}),
+		new drawNodes(svg)
 	]
 });
 
@@ -44,7 +43,7 @@ graph.setNode("hford",      { label: "Harrison Ford", width: 300, height: 400 })
 graph.setNode("lwilson",    { label: "Luke Wilson",   width: 300, height: 400 });
 graph.setNode("kbacon",     { label: "Kevin Bacon",   width: 300, height: 400 });
 
-/*/ Add edges to the graph.
+// Add edges to the graph.
 graph.setEdge("kspacey",   "swilliams");
 graph.setEdge("swilliams", "kbacon");
 graph.setEdge("bpitt",     "kbacon");
@@ -52,41 +51,6 @@ graph.setEdge("hford",     "lwilson");
 graph.setEdge("lwilson",   "kbacon");//*/
 
 blueprint.calculateLayout();
+blueprint.update();
 
-function layoutUpdate(transform) {
-	svg.selectAll('g').remove();
-
-	const gEl = svg.selectAll('g')
-				   .data(graph.nodes(), (d) => d)
-
-	gEl.enter()
-		.append('g')
-		.merge(gEl)
-			.attr('transform', (d) =>
-				'translate(' +
-					(graph.node(d).x * transform.k + transform.x)
-					+ ',' +  
-					(graph.node(d).y * transform.k + transform.y)
-					+ ')'
-			)
-		.append("rect")	
-			.attr('x', 0)
-			.attr('y', 0)
-			.attr('width',  (d) => graph.node(d).width  * transform.k )
-			.attr('height', (d) => 30 * transform.k )
-			.attr('fill', 'black')
-
-	svg.selectAll('g')
-			.append('text')
-			.attr('x', 15 * transform.k)
-			.attr('y', 20 * transform.k)
-			.attr('font-size', 16 * transform.k + 'px')
-			.style('fill', 'white')
-			.text((d) => graph.node(d).label)
-	
-	svg.selectAll('g')
-		.call(blueprint.drag);
-
-	gEl.exit()
-}
-layoutUpdate({x: 0, y: 0, k: 1});
+window.graph = graph; // tmp to debug stuff. TODO: remove

@@ -47,6 +47,7 @@ export function Grid(svg, config) {
 	svg.style('background-color', color.bg);
 
 	const space = (config||{}).space || 20;
+	const grid = svg.append('g');
 
 	return {
 		update(transform) {
@@ -54,7 +55,7 @@ export function Grid(svg, config) {
 			y = (transform||{}).y || 0,
 			k = (transform||{}).k || 1;
 
-			var lines = svg
+			var lines = grid 
 				.selectAll('line')
 				.data(gridData(
 					x, y,
