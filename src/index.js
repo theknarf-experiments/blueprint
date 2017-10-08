@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
-import { Grid } from './grid';
 import Blueprint from './blueprint';
+import { Grid } from './grid';
 import { drawNodes } from './drawNodes';
 
 import preventMacScrollback from './preventMacScrollback';
@@ -32,25 +32,61 @@ var blueprint = new Blueprint({
 	]
 });
 
-//import dot from 'graphlib-dot';
-//var graph = dot.read("digraph { 1; 2; 1 -> 2 [label=\"label\"] }");
-var graph = blueprint.getGraph();
-
-graph.setNode("kspacey",    { label: "Kevin Spacey",  width: 300, height: 400 });
-graph.setNode("swilliams",  { label: "Saul Williams", width: 300, height: 400 });
-graph.setNode("bpitt",      { label: "Brad Pitt",     width: 300, height: 400 });
-graph.setNode("hford",      { label: "Harrison Ford", width: 300, height: 400 });
-graph.setNode("lwilson",    { label: "Luke Wilson",   width: 300, height: 400 });
-graph.setNode("kbacon",     { label: "Kevin Bacon",   width: 300, height: 400 });
+blueprint.getGraph().setNode("kspacey", {
+	label: "Kevin Spacey",
+	width: 300, height: 400,
+	attributes: {
+		noiseStrengt: {
+			value: 10,
+			step: 5
+		},
+		growthSped: {
+			value: 0.2,
+			min: -5,
+			max: 5
+		},
+		maxSize: {
+			value: 4,
+			min: 0,
+			step: 0.25
+		},
+		message: {
+			value: ['pizza', 'chrome', 'hooray' ] 
+		},
+		speed: {
+			value: { Stopped: 0, Slow: 0.1, Fast: 5 }
+		}
+	}
+});
+blueprint.getGraph().setNode("swilliams", {
+	label: "Saul Williams",
+	width: 300, height: 400
+});
+blueprint.getGraph().setNode("bpitt", {
+	label: "Brad Pitt",
+	width: 300, height: 400
+});
+blueprint.getGraph().setNode("hford", {
+	label: "Harrison Ford",
+	width: 300, height: 400
+});
+blueprint.getGraph().setNode("lwilson", {
+	label: "Luke Wilson",
+	width: 300, height: 400
+});
+blueprint.getGraph().setNode("kbacon", {
+	label: "Kevin Bacon",
+	width: 300, height: 400
+});
 
 // Add edges to the graph.
-graph.setEdge("kspacey",   "swilliams");
-graph.setEdge("swilliams", "kbacon");
-graph.setEdge("bpitt",     "kbacon");
-graph.setEdge("hford",     "lwilson");
-graph.setEdge("lwilson",   "kbacon");//*/
+blueprint.getGraph().setEdge("kspacey",   "swilliams");
+blueprint.getGraph().setEdge("swilliams", "kbacon");
+blueprint.getGraph().setEdge("bpitt",     "kbacon");
+blueprint.getGraph().setEdge("hford",     "lwilson");
+blueprint.getGraph().setEdge("lwilson",   "kbacon");//*/
 
 blueprint.calculateLayout();
 blueprint.update();
 
-window.graph = graph; // tmp to debug stuff. TODO: remove
+window.graph = blueprint.getGraph();
