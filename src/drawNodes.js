@@ -24,6 +24,13 @@ function dom(nodeName, config) {
 			mrg.call(cll);
 		}
 
+		if(typeof config['text'] !== 'undefined') {
+			const txt = config['text'];
+			delete config['text'];
+
+			mrg.text(txt);
+		}
+
 		Object.keys(config).forEach( key => mrg.attr(key, config[key]) );
 
 		subDom.forEach( tmpSubDom => tmpSubDom(mrg) ); 
@@ -39,16 +46,13 @@ export function drawNodes(svg) {
 	};
 
 	this.update = (transform, graph) => {
-		const gTransform = (d) =>
-			'translate(' +
-				(graph.node(d).x * transform.k + transform.x) + ',' +  
-				(graph.node(d).y * transform.k + transform.y) +
-			')';
-
 		const g = (
 			<g
 				data={graph.nodes()}
-				transform={gTransform}
+				transform={(d) => 'translate(' +
+					(graph.node(d).x * transform.k + transform.x) + ',' +  
+					(graph.node(d).y * transform.k + transform.y) +
+				')'}
 				fill='grey'
 				call={ (typeof this.drag !== 'undefined') ? this.drag : (()=>{}) }>
 				<rect x="0" y="0"
@@ -58,18 +62,16 @@ export function drawNodes(svg) {
 					width={  d => graph.node(d).width  * transform.k }
 					height={ d => 30                   * transform.k }
 					fill='black' />
+				<text
+					x={15 * transform.k}
+					y={20 * transform.k}
+					font-size={16 * transform.k + 'px'}
+					fill='white'
+					text={d=>graph.node(d).label}
+					/>
 			</g>
 		)(layout); 
 		
-		/*
-		g.selectAll('text').remove();
-		g.insert('text')
-			.attr('x', 15 * transform.k)
-			.attr('y', 20 * transform.k)
-			.attr('font-size', 16 * transform.k + 'px')
-			.style('fill', 'white')
-			.text((d) => graph.node(d).label);
-
 		g.selectAll('g').remove();
 		const attr = g.selectAll('g').data( (d) => {
 			const attr = graph.node(d).attributes || {};
@@ -91,7 +93,6 @@ export function drawNodes(svg) {
 			.attr('font-size', '20px')
 			.attr('fill', 'red')
 			.attr('alignment-baseline', 'hanging');
-		//*/
 	}
 
 	return this;
