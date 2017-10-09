@@ -3,28 +3,31 @@ import * as d3 from 'd3';
 function dom(nodeName, config) {
 	const subDom = Array.prototype.slice.call(arguments, 2);
 
-	return (el, data) => {
-		if(data !== null ) {
-			const tmp = el.selectAll(nodeName).data(data)
+	return (el) => {
+		const data = config['data'] || ( d => [d] );
+		delete config['data'];
 
-			tmp.exit().remove();
-			const mrg = tmp.enter()
-				.append(nodeName)
-				.merge(tmp);
+		const selector = config['select'] || ( el => el.selectAll(nodeName) ); 
+		delete config['select'];
 
-			Object.keys(config).forEach( key => mrg.attr(key, config[key]) );
+		const tmp = selector(el).data(data);
 
-			subDom.forEach( tmpSubDom => tmpSubDom(mrg, null) ); 
-			return mrg;
-		} else {
-			el.selectAll(nodeName).remove();
-			const mrg = el.append(nodeName);
+		tmp.exit().remove();
+		const mrg = tmp.enter()
+			.append(nodeName)
+			.merge(tmp);
 
-			Object.keys(config).forEach( key => mrg.attr(key, config[key]) );
+		if(typeof config['call'] !== 'undefined') {
+			const cll = config['call'];
+			delete config['call'];
 
-			subDom.forEach( tmpSubDom => tmpSubDom(mrg, null) ); 
-			return mrg;
+			mrg.call(cll);
 		}
+
+		Object.keys(config).forEach( key => mrg.attr(key, config[key]) );
+
+		subDom.forEach( tmpSubDom => tmpSubDom(mrg) ); 
+		return mrg;
 	};
 }
 
@@ -43,34 +46,22 @@ export function drawNodes(svg) {
 			')';
 
 		const g = (
-			<g transform={gTransform} fill='grey'>
+			<g
+				data={graph.nodes()}
+				transform={gTransform}
+				fill='grey'
+				call={ (typeof this.drag !== 'undefined') ? this.drag : (()=>{}) }>
 				<rect x="0" y="0"
 					width={  d => graph.node(d).width  * transform.k }
 					height={ d => graph.node(d).height * transform.k } />
-					{/*<rect x="0" y="0"
+				<rect x="0" y="0"  select={ e => e.selectAll('rect').select(function(d,i) { return i==1 ? this : null }) }
 					width={  d => graph.node(d).width  * transform.k }
-					height={ d => 30                   * transform.k } /> */}
+					height={ d => 30                   * transform.k }
+					fill='black' />
 			</g>
-		)(layout, graph.nodes());
+		)(layout); 
 		
 		/*
-		if(typeof this.drag !== 'undefined')
-			g.call(this.drag);
-
-		g.selectAll('rect').remove();
-		g.append('rect')	
-			.attr('x', 0)
-			.attr('y', 0)
-			.attr('width',  (d) => graph.node(d).width  * transform.k )
-			.attr('height', (d) => graph.node(d).height * transform.k );
-
-		g.insert('rect')
-			.attr('x', 0)
-			.attr('y', 0)
-			.attr('width',  (d) => graph.node(d).width  * transform.k )
-			.attr('height', (d) => 30                   * transform.k )
-			.attr('fill', 'black');
-
 		g.selectAll('text').remove();
 		g.insert('text')
 			.attr('x', 15 * transform.k)
